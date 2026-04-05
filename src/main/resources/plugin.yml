@@ -1,0 +1,18 @@
+name: FarmerPlots
+version: '1.0.0-SNAPSHOT'
+main: com.farmerplots.FarmerPlotsPlugin
+api-version: '1.20'
+description: "🛸 PROJECT OVERLORD: FarmerPlots Centurion Engine"
+authors:
+  - zkxen
+website: https://github.com/zkxen/FarmerPlots
+
+softdepend:
+  - PlaceholderAPI
+  - Multiverse-Core
+
+commands:
+  farmerplots:
+    description: Main FarmerPlots command
+    aliases: [fp, plots]
+    usage: /farmerplots <subcommand>
